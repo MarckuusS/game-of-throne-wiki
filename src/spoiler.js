@@ -14,7 +14,7 @@
 
 import {
   EPISODES, SEASONS, TOTAL_EPISODES, TIMELINES, DEBUTS, PLACE_FIRST_SEEN,
-  episodeAt, absOf,
+  KNOWN_FROM, episodeAt, absOf,
 } from '../data/index.js';
 import { CHARACTERS, HOUSES } from '../data/characters.js';
 import { PLACES } from '../data/places.js';
@@ -267,20 +267,36 @@ export function byHouse() {
     .sort((a, b) => b.ids.length - a.ids.length || a.name.localeCompare(b.name, 'fr'));
 }
 
-/** Un parent d'arbre (personnage suivi ou simple mention) est-il connu ? */
+/**
+ * Le nom de cette personne est-il connu du spectateur ?
+ *
+ * C'est la condition d'affichage d'un lien de parenté — et non le déblocage du
+ * personnage. La série nomme Tywin Lannister au Conseil restreint (S01E03) bien
+ * avant de le montrer (S01E07) : attendre S01E07 pour dessiner sa paternité
+ * révélerait le lien plus tard que la série ne le fait. Sa fiche, elle, reste
+ * fermée jusqu'à sa première apparition.
+ */
 export function isKinKnown(id) {
-  if (CHARACTERS[id]) return isUnlocked(id);
-  const k = KIN[id];
-  return !!k && absOf(k.from) <= progress();
+  return KNOWN_FROM[id] !== undefined && KNOWN_FROM[id] <= progress();
 }
 
-/** Fiche minimale d'un nœud d'arbre, quelle que soit son origine. */
+/**
+ * Fiche minimale d'un nœud d'arbre.
+ *
+ * `followed` distingue le personnage qu'on suit — carte pleine, cliquable, état
+ * connu — de celui dont on ne connaît encore que le nom. D'un personnage pas
+ * encore rencontré on n'expose ni l'état ni la présentation : on n'en sait rien,
+ * on a seulement entendu son nom.
+ */
 export function kinNode(id) {
   const ch = CHARACTERS[id];
   if (ch) {
+    const met = isUnlocked(id);
     return {
       id, name: ch.name, short: ch.short || ch.name, house: ch.house,
-      status: statusOf(id), followed: true, note: ch.intro,
+      status: met ? statusOf(id) : null,
+      followed: met,
+      note: met ? ch.intro : '',
     };
   }
   const k = KIN[id];

@@ -10,7 +10,7 @@
  * permet de publier l'application dans un sous-dossier (GitHub Pages).
  */
 
-const CACHE = 'chroniques-v3';
+const CACHE = 'chroniques-v4';
 
 const ASSETS = [
   './',

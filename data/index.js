@@ -110,6 +110,28 @@ for (const ep of EPISODES) {
 /** Personnages réellement présents dans les données, triés par apparition. */
 export const CHARACTER_IDS = Object.keys(DEBUTS).sort((a, b) => DEBUTS[a] - DEBUTS[b]);
 
+/**
+ * KNOWN_FROM[id] = épisode à partir duquel le NOM de cette personne est connu
+ * du spectateur. Ce n'est pas la même chose que son déblocage :
+ *
+ *   - un personnage suivi est débloqué à son premier beat (DEBUTS), mais son
+ *     nom peut être prononcé avant — d'où `mentioned` dans CHARACTERS ;
+ *   - une simple mention (KIN) n'a que cette date.
+ *
+ * C'est KNOWN_FROM qui autorise l'affichage d'un lien de parenté : sans cela,
+ * l'arbre attendrait l'entrée en scène et révélerait les liens plus tard que
+ * la série ne le fait.
+ */
+export const KNOWN_FROM = {};
+for (const [id, ch] of Object.entries(CHARACTERS)) {
+  const debut = DEBUTS[id] || Infinity;
+  const said = ch.mentioned ? absOf(ch.mentioned) : Infinity;
+  KNOWN_FROM[id] = Math.min(debut, said || Infinity);
+}
+for (const [id, k] of Object.entries(KIN)) {
+  KNOWN_FROM[id] = absOf(k.from) || Infinity;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Index par lieu                                                              */
 /* -------------------------------------------------------------------------- */
@@ -155,6 +177,17 @@ export function integrityReport() {
     if (k.dies && absOf(k.dies) < absOf(k.from)) problems.push(`parent « ${id} » meurt avant d'apparaître`);
   }
 
+  /* Un lien affiché avant que le nom de l'un des deux ne soit connu ferait
+     apparaître ce nom trop tôt : c'est la fuite que `mentioned` doit éviter. */
+  const tooEarly = (where, id, from) => {
+    if (!known(id) || !absOf(from)) return;
+    if (absOf(from) < KNOWN_FROM[id]) {
+      const at = KNOWN_FROM[id] === Infinity ? 'jamais' : episodeAt(KNOWN_FROM[id]).code;
+      problems.push(`${where} : daté ${from}, mais le nom de « ${id} » n'est connu qu'en ${at}`
+        + ' — ajouter `mentioned` au personnage, ou retarder le lien');
+    }
+  };
+
   for (const [parent, child, from, opts = {}] of PARENTS) {
     const where = `filiation ${parent} → ${child}`;
     if (!known(parent)) problems.push(`${where} : parent inconnu`);
@@ -162,6 +195,8 @@ export function integrityReport() {
     if (!absOf(from)) problems.push(`${where} : épisode « ${from} » inconnu`);
     if (opts.refuted && !absOf(opts.refuted)) problems.push(`${where} : démenti « ${opts.refuted} » inconnu`);
     if (opts.refuted && absOf(opts.refuted) < absOf(from)) problems.push(`${where} : démentie avant d'être connue`);
+    tooEarly(where, parent, from);
+    tooEarly(where, child, from);
   }
 
   for (const [a, b, from, kind, end] of UNIONS) {
@@ -170,6 +205,8 @@ export function integrityReport() {
     if (!absOf(from)) problems.push(`${where} : épisode « ${from} » inconnu`);
     if (!kind) problems.push(`${where} : type d'union manquant`);
     if (end && !absOf(end)) problems.push(`${where} : fin « ${end} » inconnue`);
+    tooEarly(where, a, from);
+    tooEarly(where, b, from);
   }
 
   return problems;
@@ -183,11 +220,10 @@ export function integrityReport() {
  */
 export function familyDeferrals() {
   const known = (id) => !!CHARACTERS[id] || !!KIN[id];
-  const dateOf = (id) => (CHARACTERS[id] ? DEBUTS[id] : absOf(KIN[id].from));
   const out = [];
   const check = (label, a, b, from) => {
     if (!known(a) || !known(b) || !absOf(from)) return;
-    const late = Math.max(dateOf(a), dateOf(b));
+    const late = Math.max(KNOWN_FROM[a], KNOWN_FROM[b]);
     if (absOf(from) < late) out.push(`${label} : connue en ${from}, affichée à partir de ${episodeAt(late).code}`);
   };
   for (const [parent, child, from] of PARENTS) check(`${parent} → ${child}`, parent, child, from);

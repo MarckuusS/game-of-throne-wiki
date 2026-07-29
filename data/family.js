@@ -68,7 +68,7 @@ export const KIN = {
                note: "Épouse de Stannis, dévote du Maître de la Lumière.", dies: '5x10' },
 
   /* ------------------------------ Tyrell ------------------------------- */
-  mace:      { name: 'Mace Tyrell', short: 'Mace', house: 'tyrell', from: '3x01',
+  mace:      { name: 'Mace Tyrell', short: 'Mace', house: 'tyrell', from: '2x03',
                note: "Seigneur de Hautjardin, père de Margaery et Loras.", dies: '6x10' },
 
   /* ------------------------------ Martell ------------------------------ */
@@ -139,9 +139,9 @@ export const PARENTS = [
   ['jonarryn', 'robin', '1x05'],
 
   /* --- Lannister ------------------------------------------------------ */
-  ['tywin', 'jaime', '1x01'],
-  ['tywin', 'cersei', '1x01'],
-  ['tywin', 'tyrion', '1x01'],
+  ['tywin', 'jaime', '1x03'],
+  ['tywin', 'cersei', '1x03'],
+  ['tywin', 'tyrion', '1x03'],
   ['joanna', 'jaime', '3x01'],
   ['joanna', 'cersei', '3x01'],
   ['joanna', 'tyrion', '3x01'],
@@ -174,8 +174,8 @@ export const PARENTS = [
 
   /* --- Tyrell --------------------------------------------------------- */
   ['olenna', 'mace', '3x02'],
-  ['mace', 'margaery', '3x01'],
-  ['mace', 'loras', '3x01'],
+  ['mace', 'margaery', '2x03'],
+  ['mace', 'loras', '2x03'],
 
   /* --- Martell -------------------------------------------------------- */
   ['doran', 'trystane', '5x02'],
@@ -194,7 +194,7 @@ export const PARENTS = [
   /* --- Tarly / Mormont ------------------------------------------------ */
   ['randyll', 'samwell', '1x04'],
   ['randyll', 'dickon', '6x06'],
-  ['jeor', 'jorah', '5x04'],
+  ['jeor', 'jorah', '1x09'],
 
   /* --- Reed / Peuple libre -------------------------------------------- */
   ['craster', 'gilly', '2x03'],

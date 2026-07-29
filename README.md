@@ -65,11 +65,19 @@ règles supplémentaires (`data/family.js`) :
   et où le lien réel apparaît. Avant cette date, l'arbre montre la version
   officielle, sans le moindre indice.
 
-En cas de doute sur une date, on retarde : arriver en retard sur une révélation
-n'est jamais un spoiler, arriver en avance l'est toujours. `integrityReport()`
-refuse un lien vers un inconnu ou un démenti antérieur à sa révélation, et
-`familyDeferrals()` liste les liens que le filtre repousse parce qu'un des deux
-personnages n'est pas encore entré en scène.
+Corollaire, aussi important que le reste : un lien ne doit pas non plus être
+révélé **plus tard** que la série. La série nomme Tywin Lannister au Conseil
+restreint (S01E03) et ne le montre qu'en S01E07 : attendre S01E07 pour dessiner
+sa paternité, ce serait retarder une information déjà donnée. D'où le champ
+`mentioned` dans `data/characters.js` — l'épisode où un nom est prononcé, quand
+c'est avant la première apparition. Le lien se trace alors au bon moment, avec
+une carte en pointillé « nom connu, pas encore rencontré » : pas de fiche, pas
+de chronique, pas d'état. On a entendu le nom, rien de plus.
+
+`integrityReport()` refuse un lien vers un inconnu, un démenti antérieur à sa
+révélation, ou un lien daté **avant** que le nom de l'une de ses extrémités ne
+soit connu. `familyDeferrals()` liste les liens que le filtre repousse encore —
+la liste doit rester vide.
 
 ## Publier sur GitHub Pages
 
@@ -132,10 +140,11 @@ Un épisode, dans `data/seasons/sN.js` :
 - Un personnage se débloque au premier épisode où il a un beat — rien à déclarer
   ailleurs. `data/characters.js` ne contient que ce qui est vrai dès sa première
   apparition.
-- Une parenté s'ajoute dans `data/family.js` : `['tywin', 'jaime', '1x01']`.
-  Un parent jamais suivi (mentionné seulement) se déclare dans `KIN`, avec la
-  date de sa première mention. `node tools/spoiler-audit.mjs` vérifie ensuite
-  qu'aucun lien ni aucun nom n'apparaît avant sa date.
+- Une parenté s'ajoute dans `data/family.js` : `['tywin', 'jaime', '1x03']`, la
+  date étant celle où **le spectateur** l'apprend. Un parent jamais suivi se
+  déclare dans `KIN` ; un personnage suivi mais nommé avant d'apparaître reçoit
+  `mentioned` dans `data/characters.js`. `node tools/spoiler-audit.mjs` vérifie
+  ensuite qu'aucun lien, nom ou présentation n'apparaît avant sa date.
 - **Ton** : décrire l'état des choses à la fin de l'épisode. Pas de « pour
   l'instant », pas de « croit-il », pas de « sans savoir que » — `lint-tone.mjs`
   les refuse. Une formulation relue et légitime (fait passé, événement

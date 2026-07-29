@@ -12,7 +12,7 @@
  */
 
 import { chromium, devices } from '/opt/node22/lib/node_modules/playwright/index.mjs';
-import { EPISODES, DEBUTS, absOf } from '../data/index.js';
+import { EPISODES, DEBUTS, KNOWN_FROM, absOf } from '../data/index.js';
 import { CHARACTERS } from '../data/characters.js';
 import { PLACES } from '../data/places.js';
 import { KIN, PARENTS, UNIONS } from '../data/family.js';
@@ -37,18 +37,32 @@ function fragments(text) {
     .filter((s) => s.split(/\s+/).length >= 5);
 }
 
-/**
+/*
  * Contrôle structurel du graphe de parenté : `familyGraph()` ne doit renvoyer
  * aucun lien dont l'épisode de révélation est postérieur à la progression.
  * C'est le seul contrôle qui ne passe pas par le DOM — un lien absent de
  * l'arbre parce que la maison n'est pas affichée ne prouverait rien.
+ *
+ * On charge les modules UNE fois et on pilote la progression par setProgress().
+ * Tenter de recharger spoiler.js avec un suffixe de requête ne marche pas :
+ * ses dépendances (state.js) gardent leur URL, donc leur instance en cache —
+ * le contrôle passait alors chaque niveau avec la progression du premier.
  */
-async function graphLeaks(level) {
-  globalThis.localStorage = {
-    getItem: () => JSON.stringify({ progress: level }),
-    setItem() {}, removeItem() {},
-  };
-  const S = await import(`../src/spoiler.js?lvl=${level}`);
+const memory = new Map();
+globalThis.localStorage = {
+  getItem: (k) => (memory.has(k) ? memory.get(k) : null),
+  setItem: (k, v) => memory.set(k, String(v)),
+  removeItem: (k) => memory.delete(k),
+};
+
+const state = await import('../src/state.js');
+const S = await import('../src/spoiler.js');
+
+function graphLeaks(level) {
+  state.setProgress(level);
+  if (S.EPISODES && state.progress() !== level) {
+    return [`progression non appliquée (${state.progress()} au lieu de ${level})`];
+  }
   const g = S.familyGraph();
   const out = [];
 
@@ -67,6 +81,15 @@ async function graphLeaks(level) {
   for (const [id, k] of Object.entries(KIN)) {
     if (absOf(k.from) <= level) continue;
     if (S.isKinKnown(id)) out.push(`parent « ${id} » connu avant ${k.from}`);
+  }
+  // un personnage pas encore rencontré peut figurer dans l'arbre par son nom,
+  // mais jamais comme personnage suivi : ni fiche, ni état, ni présentation
+  for (const id of Object.keys(CHARACTERS)) {
+    if (DEBUTS[id] <= level) continue;
+    const node = S.kinNode(id);
+    if (node && node.followed) out.push(`« ${id} » présenté comme suivi avant sa première apparition`);
+    if (node && node.note) out.push(`« ${id} » expose sa présentation avant sa première apparition`);
+    if (node && node.status) out.push(`« ${id} » expose son état avant sa première apparition`);
   }
   return out;
 }
@@ -134,10 +157,16 @@ for (const level of LEVELS) {
   }
 
   for (const [id, ch] of Object.entries(CHARACTERS)) {
-    if (DEBUTS[id] <= level) continue;
-    if (html.includes(ch.name)) leaks.push(`personnage non débloqué : ${ch.name}`);
-    for (const frag of fragments(ch.intro)) {
-      if (html.includes(frag)) leaks.push(`intro de ${ch.name}`);
+    // le nom : interdit avant qu'il ne soit prononcé à l'écran (KNOWN_FROM,
+    // qui vaut la première apparition sauf mention antérieure explicite)
+    if (KNOWN_FROM[id] > level && html.includes(ch.name)) {
+      leaks.push(`nom pas encore prononcé : ${ch.name}`);
+    }
+    // la présentation : interdite avant la première apparition, sans exception
+    if (DEBUTS[id] > level) {
+      for (const frag of fragments(ch.intro)) {
+        if (html.includes(frag)) leaks.push(`présentation de ${ch.name}`);
+      }
     }
   }
 
@@ -149,7 +178,7 @@ for (const level of LEVELS) {
     }
   }
 
-  leaks.push(...(await graphLeaks(level)));
+  leaks.push(...graphLeaks(level));
 
   const unique = [...new Set(leaks)];
   const label = `progression ${String(level).padStart(2)} / ${EPISODES.length}`;

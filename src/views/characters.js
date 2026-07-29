@@ -133,7 +133,7 @@ function renderTreeMode() {
         <span><b style="color:#5f6b7a">· ·</b> fiançailles</span>
         <span><b style="color:#3f4d5d">- -</b> filiation hors mariage</span>
         <span><b style="color:#4a4256">· ·</b> filiation reconnue mais fausse</span>
-        <span><i style="background:#131a24;border:1px dashed #2c3947"></i> seulement mentionné</span>
+        <span><i style="background:#131a24;border:1px dashed #2c3947"></i> nom connu, pas encore rencontré</span>
       </div>`
       : '<div class="empty"><strong>Rien à dessiner pour cette maison</strong></div>'}
   `;

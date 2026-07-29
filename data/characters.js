@@ -49,8 +49,13 @@ export const HOUSES = {
 };
 
 /**
- * intro : vrai dès la première apparition, jamais au-delà.
- * arcs  : titres qui apparaissent au fil du récit, chacun daté.
+ * intro     : vrai dès la première apparition, jamais au-delà.
+ * arcs      : titres qui apparaissent au fil du récit, chacun daté.
+ * mentioned : épisode où le nom est prononcé à l'écran, quand c'est AVANT la
+ *             première apparition. Sert uniquement à l'arbre de parenté : un
+ *             lien peut alors se tracer au rythme de la série, avec une carte
+ *             « mentionné, pas encore rencontré ». Ne débloque ni fiche, ni
+ *             chronique, ni présence dans la liste des personnages.
  */
 export const CHARACTERS = {
   /* ------------------------------- Stark ------------------------------- */
@@ -84,6 +89,7 @@ export const CHARACTERS = {
 
   /* ----------------------------- Lannister ----------------------------- */
   tywin:    { name: 'Tywin Lannister', short: 'Tywin', house: 'lannister',
+              mentioned: '1x03',   // nommé au Conseil restreint avant d'apparaître
               intro: "Seigneur de Castral Roc, chef de la maison Lannister, l'homme le plus riche des Sept Couronnes." },
   cersei:   { name: 'Cersei Lannister', short: 'Cersei', house: 'lannister',
               intro: "Reine des Sept Couronnes, épouse de Robert Baratheon." },
@@ -94,8 +100,10 @@ export const CHARACTERS = {
   joffrey:  { name: 'Joffrey Baratheon', short: 'Joffrey', house: 'lannister',
               intro: "Prince héritier, fils de Robert et Cersei." },
   tommen:   { name: 'Tommen Baratheon', short: 'Tommen', house: 'lannister',
+              mentioned: '1x02',   // nommé dans le cortège royal avant d'avoir une scène
               intro: "Second fils de Robert et Cersei, enfant doux et effacé." },
   myrcella: { name: 'Myrcella Baratheon', short: 'Myrcella', house: 'lannister',
+              mentioned: '1x02',   // nommée dans le cortège royal avant d'avoir une scène
               intro: "Fille de Robert et Cersei." },
   bronn:    { name: 'Bronn', short: 'Bronn', house: 'lannister',
               intro: "Reître sans terres ni scrupules, vend son épée au plus offrant." },
@@ -171,6 +179,7 @@ export const CHARACTERS = {
   pycelle:  { name: 'Grand Mestre Pycelle', short: 'Pycelle', house: 'citadelle',
               intro: "Grand Mestre du Donjon Rouge, au service des rois depuis très longtemps." },
   lysa:     { name: 'Lysa Arryn', short: 'Lysa', house: 'arryn',
+              mentioned: '1x01',   // nommée dans la lettre que Catelyn reçoit
               intro: "Sœur de Catelyn, veuve de Jon Arryn, régente du Val." },
   brienne:  { name: 'Brienne de Torth', short: 'Brienne', house: 'baratheon',
               intro: "Guerrière de Torth, plus grande et plus forte que la plupart des chevaliers." },
@@ -183,12 +192,14 @@ export const CHARACTERS = {
   olenna:   { name: 'Olenna Tyrell', short: 'Olenna', house: 'tyrell',
               intro: "Doyenne des Tyrell, langue la plus acérée des Sept Couronnes." },
   randyll:  { name: 'Randyll Tarly', short: 'Randyll', house: 'tarly',
+              mentioned: '1x04',   // nommé par Samwell dès son arrivée au Mur
               intro: "Seigneur de Corcolline, réputé le meilleur commandant du Bief." },
 
   /* ------------------------- Fer & Bolton ------------------------------ */
   theon:    { name: 'Theon Greyjoy', short: 'Theon', house: 'greyjoy',
               intro: "Fils de Balon Greyjoy, pupille des Stark depuis la rébellion de son père." },
   balon:    { name: 'Balon Greyjoy', short: 'Balon', house: 'greyjoy',
+              mentioned: '1x01',   // nommé dès la présentation de Theon
               intro: "Seigneur des Îles de Fer, vaincu jadis par Robert Baratheon." },
   yara:     { name: 'Yara Greyjoy', short: 'Yara', house: 'greyjoy',
               intro: "Fille de Balon, commande des navires et des hommes." },

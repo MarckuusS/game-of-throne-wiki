@@ -1,6 +1,6 @@
 # Architecture — Chroniques (suivi de série anti-spoil)
 
-> Dernière mise à jour : 2026-07-29 (3e passe : vues par maison et arbre de descendance)
+> Dernière mise à jour : 2026-07-29 (4e passe : parentés au rythme exact de la série)
 > Stack : HTML + CSS + JavaScript (modules ES natifs), aucune dépendance, aucun build. Stockage : localStorage. PWA (manifest + service worker).
 > Pattern : données datées → filtre → vues. Routeur par hash, rendu par chaînes HTML.
 > Points d'entrée : `index.html` (coquille) → `main.js` (routeur et démarrage)
@@ -103,8 +103,9 @@ tools/
 
 ### data/index.js
 - **Exporte** : `EPISODES`, `SEASONS`, `TOTAL_EPISODES`, `TIMELINES`, `DEBUTS`,
-  `CHARACTER_IDS`, `PLACE_FIRST_SEEN`, `episodeAt(abs)`, `absOf(code)`,
-  `fmtCode(s, n)`, `parseCode(str)`, `integrityReport() → string[]`
+  `KNOWN_FROM`, `CHARACTER_IDS`, `PLACE_FIRST_SEEN`, `episodeAt(abs)`, `absOf(code)`,
+  `fmtCode(s, n)`, `parseCode(str)`, `integrityReport() → string[]`,
+  `familyDeferrals() → string[]`
 - **Consomme** : `data/seasons/s1..s8.js`, `data/characters.js`, `data/places.js`
 - **Modifié le** : 2026-07-29
 
@@ -248,6 +249,15 @@ views/mapview.js
 - **`src/tree.js` ne lit aucune donnée d'épisode.** Il reçoit le graphe déjà
   filtré. Lui donner accès à `data/family.js` supprimerait la garantie.
 - **Un `KIN` n'est pas cliquable** : pas de fiche, donc aucune chronique à filtrer.
+- **Deux dates distinctes par personnage**, et il ne faut pas les confondre :
+  `DEBUTS[id]` (premier beat) débloque la fiche, la chronique, la liste et la
+  carte ; `KNOWN_FROM[id]` (= `min(DEBUTS, mentioned)`) autorise seulement
+  l'apparition du nom dans l'arbre. Un personnage nommé mais pas encore
+  rencontré a une carte en pointillé, sans état ni présentation.
+- **Un lien ne doit être révélé ni avant ni après la série.** Le retarder parce
+  qu'un des deux personnages n'a pas encore de fiche est un défaut, pas une
+  précaution : c'est ce que `familyDeferrals()` surveille, et sa liste doit
+  rester vide.
 
 ---
 
@@ -269,6 +279,11 @@ views/mapview.js
   spoiler que `spoiler-audit.mjs` ne détecte pas (le texte appartient bien à un
   épisode validé). `lint-tone.mjs` couvre les locutions, pas le vocabulaire :
   celui-ci reste à la vigilance du rédacteur.
+- ⚠️ Dans un outil Node, recharger `spoiler.js` avec un suffixe de requête
+  (`?lvl=3`) NE change pas la progression : ses dépendances gardent leur URL,
+  donc leur instance en cache. Le contrôle structurel de l'audit a ainsi passé
+  tous les niveaux avec la progression du premier. Charger les modules une fois
+  et piloter par `state.setProgress()`.
 - ⚠️ Les devises de maison (`HOUSES[*].words`) ne sont pas datées et s'affichent
   dès qu'un membre est débloqué : ne pas y mettre une formule qui n'est prononcée
   que plus tard (« Valar Morghulis », titre de S02E10, fuitait ainsi dès la
@@ -301,4 +316,5 @@ views/mapview.js
 | 2026-07-29 | Notes « À surveiller » rédigées en constats | Une question oriente vers sa réponse (« Va-t-elle répondre par le feu ? ») | Questions ouvertes |
 | 2026-07-29 | Parentés datées de la révélation, filiations officielles modélisées | Un arbre est le pire vecteur de spoiler ; il fallait pouvoir afficher la version officielle puis la vraie | Arbre statique, ou pas d'arbre |
 | 2026-07-29 | `KIN` séparé de `CHARACTERS` | Un arbre sans Rhaegar ni Rickard n'a pas de sens, mais ils ne sont pas des personnages suivis : ni fiche, ni chronique, ni déblocage | Les ajouter à CHARACTERS avec de faux beats |
+| 2026-07-29 | `mentioned` : date où un nom est prononcé, distincte de la première apparition | Sans elle, l'arbre révélait les parentés plus tard que la série — un défaut symétrique du spoiler | Attendre la première apparition (12 liens en retard) |
 | 2026-07-29 | Pan/zoom extrait dans `panzoom.js` | L'arbre a le même problème que la carte : plus grand que l'écran. Un seul comportement à régler et à corriger | Défilement natif (cadres coupés, pas de vue d'ensemble) |
