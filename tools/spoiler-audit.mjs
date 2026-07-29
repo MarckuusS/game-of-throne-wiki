@@ -12,9 +12,10 @@
  */
 
 import { chromium, devices } from '/opt/node22/lib/node_modules/playwright/index.mjs';
-import { EPISODES, DEBUTS } from '../data/index.js';
+import { EPISODES, DEBUTS, absOf } from '../data/index.js';
 import { CHARACTERS } from '../data/characters.js';
 import { PLACES } from '../data/places.js';
+import { KIN, PARENTS, UNIONS } from '../data/family.js';
 
 /* Certains titres d'épisodes sont des mots que l'application affiche
    légitimement par ailleurs (« Winterfell » est un lieu de la carte).
@@ -34,6 +35,40 @@ function fragments(text) {
     .split(/[.;:—]/)
     .map((s) => s.trim())
     .filter((s) => s.split(/\s+/).length >= 5);
+}
+
+/**
+ * Contrôle structurel du graphe de parenté : `familyGraph()` ne doit renvoyer
+ * aucun lien dont l'épisode de révélation est postérieur à la progression.
+ * C'est le seul contrôle qui ne passe pas par le DOM — un lien absent de
+ * l'arbre parce que la maison n'est pas affichée ne prouverait rien.
+ */
+async function graphLeaks(level) {
+  globalThis.localStorage = {
+    getItem: () => JSON.stringify({ progress: level }),
+    setItem() {}, removeItem() {},
+  };
+  const S = await import(`../src/spoiler.js?lvl=${level}`);
+  const g = S.familyGraph();
+  const out = [];
+
+  for (const [parent, child, from] of PARENTS) {
+    if (absOf(from) <= level) continue;
+    if (g.parents.some((l) => l.parent === parent && l.child === child)) {
+      out.push(`filiation ${parent} → ${child} (révélée en ${from}) présente dans le graphe`);
+    }
+  }
+  for (const [a, b, from] of UNIONS) {
+    if (absOf(from) <= level) continue;
+    if (g.unions.some((u) => (u.a === a && u.b === b) || (u.a === b && u.b === a))) {
+      out.push(`union ${a} + ${b} (datée ${from}) présente dans le graphe`);
+    }
+  }
+  for (const [id, k] of Object.entries(KIN)) {
+    if (absOf(k.from) <= level) continue;
+    if (S.isKinKnown(id)) out.push(`parent « ${id} » connu avant ${k.from}`);
+  }
+  return out;
 }
 
 const browser = await chromium.launch({ executablePath: CHROME });
@@ -60,6 +95,24 @@ for (const level of LEVELS) {
       for (const h of heads) { await h.click(); await page.waitForTimeout(30); }
     }
     html += await page.content();
+
+    // Personnages : les trois modes, et chaque arbre de maison
+    if (v === 'personnages') {
+      for (const m of ['maisons', 'arbre']) {
+        const btn = page.locator(`[data-mode="${m}"]`);
+        if (!(await btn.count())) continue;
+        await btn.click();
+        await page.waitForTimeout(120);
+        html += await page.content();
+        if (m === 'arbre') {
+          for (const chip of await page.locator('.house-chip').all()) {
+            await chip.click();
+            await page.waitForTimeout(80);
+            html += await page.content();
+          }
+        }
+      }
+    }
   }
 
   const leaks = [];
@@ -87,6 +140,16 @@ for (const level of LEVELS) {
       if (html.includes(frag)) leaks.push(`intro de ${ch.name}`);
     }
   }
+
+  for (const [, k] of Object.entries(KIN)) {
+    if (absOf(k.from) <= level) continue;
+    if (html.includes(k.name)) leaks.push(`parent non révélé : ${k.name}`);
+    for (const frag of fragments(k.note)) {
+      if (html.includes(frag)) leaks.push(`note sur ${k.name}`);
+    }
+  }
+
+  leaks.push(...(await graphLeaks(level)));
 
   const unique = [...new Set(leaks)];
   const label = `progression ${String(level).padStart(2)} / ${EPISODES.length}`;

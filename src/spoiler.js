@@ -16,8 +16,9 @@ import {
   EPISODES, SEASONS, TOTAL_EPISODES, TIMELINES, DEBUTS, PLACE_FIRST_SEEN,
   episodeAt, absOf,
 } from '../data/index.js';
-import { CHARACTERS } from '../data/characters.js';
+import { CHARACTERS, HOUSES } from '../data/characters.js';
 import { PLACES } from '../data/places.js';
+import { KIN, PARENTS, UNIONS } from '../data/family.js';
 import { progress } from './state.js';
 
 export { EPISODES, SEASONS, TOTAL_EPISODES, episodeAt };
@@ -242,6 +243,103 @@ export function deathsIn(ep) {
   return Object.entries(ep.beats)
     .filter(([, b]) => b && b.st === 'mort')
     .map(([id]) => id);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Maisons et parentés                                                         */
+/* -------------------------------------------------------------------------- */
+
+/** Personnages débloqués regroupés par maison, maisons les plus fournies d'abord. */
+export function byHouse() {
+  const groups = new Map();
+  for (const id of unlockedIds()) {
+    const h = CHARACTERS[id].house;
+    if (!groups.has(h)) groups.set(h, []);
+    groups.get(h).push(id);
+  }
+  return [...groups.entries()]
+    .map(([house, ids]) => ({
+      house,
+      ...HOUSES[house],
+      ids: ids.sort((a, b) => appearances(b) - appearances(a)),
+      alive: ids.filter((id) => statusOf(id) !== 'mort').length,
+    }))
+    .sort((a, b) => b.ids.length - a.ids.length || a.name.localeCompare(b.name, 'fr'));
+}
+
+/** Un parent d'arbre (personnage suivi ou simple mention) est-il connu ? */
+export function isKinKnown(id) {
+  if (CHARACTERS[id]) return isUnlocked(id);
+  const k = KIN[id];
+  return !!k && absOf(k.from) <= progress();
+}
+
+/** Fiche minimale d'un nœud d'arbre, quelle que soit son origine. */
+export function kinNode(id) {
+  const ch = CHARACTERS[id];
+  if (ch) {
+    return {
+      id, name: ch.name, short: ch.short || ch.name, house: ch.house,
+      status: statusOf(id), followed: true, note: ch.intro,
+    };
+  }
+  const k = KIN[id];
+  if (!k) return null;
+  const dead = k.dies && absOf(k.dies) <= progress();
+  return {
+    id, name: k.name, short: k.short || k.name, house: k.house,
+    status: dead ? 'mort' : null, followed: false, note: k.note,
+  };
+}
+
+/**
+ * Graphe de parenté filtré par la progression.
+ *
+ * Un lien n'apparaît qu'à partir de son épisode de révélation. Un lien
+ * `believed` devient `official: true` (filiation reconnue mais fausse) dès
+ * l'épisode où le spectateur apprend la vérité — il reste affiché, en
+ * pointillé, parce que le mensonge officiel fait partie de l'histoire.
+ */
+export function familyGraph() {
+  const p = progress();
+
+  const parents = [];
+  for (const [parent, child, from, opts = {}] of PARENTS) {
+    if (absOf(from) > p) continue;
+    if (!isKinKnown(parent) || !isKinKnown(child)) continue;
+    const official = !!(opts.believed && opts.refuted && absOf(opts.refuted) <= p);
+    parents.push({ parent, child, bastard: !!opts.bastard, official });
+  }
+
+  const unions = [];
+  for (const [a, b, from, kind, end] of UNIONS) {
+    if (absOf(from) > p) continue;
+    if (end && absOf(end) <= p) continue;
+    if (!isKinKnown(a) || !isKinKnown(b)) continue;
+    unions.push({ a, b, kind });
+  }
+
+  return { parents, unions };
+}
+
+/** Maisons ayant de quoi dessiner un arbre, avec le nombre de liens visibles. */
+export function housesWithTree() {
+  const { parents } = familyGraph();
+  const count = new Map();
+  const bump = (id) => {
+    const node = kinNode(id);
+    if (!node) return;
+    count.set(node.house, (count.get(node.house) || 0) + 1);
+  };
+  for (const link of parents) {
+    if (link.official) continue;
+    bump(link.parent);
+    bump(link.child);
+  }
+  return [...count.entries()]
+    .filter(([, n]) => n >= 3)
+    .map(([house, n]) => ({ house, ...HOUSES[house], weight: n }))
+    .sort((a, b) => b.weight - a.weight);
 }
 
 /* -------------------------------------------------------------------------- */

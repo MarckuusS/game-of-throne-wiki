@@ -18,6 +18,7 @@
 
 import { EPISODES } from '../data/index.js';
 import { CHARACTERS } from '../data/characters.js';
+import { KIN } from '../data/family.js';
 
 const RULES = [
   [/pour l'instant|pour l'heure|pour le moment/i, "atténuation qui annonce un revirement"],
@@ -89,6 +90,8 @@ for (const [id, ch] of Object.entries(CHARACTERS)) {
   report('personnage', ch.name, ch.intro);
   for (const arc of ch.arcs || []) report('personnage', `${ch.name} (arc ${arc.from})`, arc.title);
 }
+
+for (const k of Object.values(KIN)) report('parenté', k.name, k.note);
 
 console.log(count
   ? `${count} formulation(s) à revoir — reformuler, ou ajouter à ALLOW après relecture.`

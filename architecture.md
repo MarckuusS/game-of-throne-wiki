@@ -1,6 +1,6 @@
 # Architecture — Chroniques (suivi de série anti-spoil)
 
-> Dernière mise à jour : 2026-07-29 (2e passe : ton des données)
+> Dernière mise à jour : 2026-07-29 (3e passe : vues par maison et arbre de descendance)
 > Stack : HTML + CSS + JavaScript (modules ES natifs), aucune dépendance, aucun build. Stockage : localStorage. PWA (manifest + service worker).
 > Pattern : données datées → filtre → vues. Routeur par hash, rendu par chaînes HTML.
 > Points d'entrée : `index.html` (coquille) → `main.js` (routeur et démarrage)
@@ -21,13 +21,16 @@ data/
 ├── index.js                # agrégation + index dérivés (EPISODES, TIMELINES, DEBUTS…)
 ├── characters.js           # HOUSES + CHARACTERS (uniquement le non-spoilant)
 ├── places.js               # PLACES (coordonnées carte) + REGIONS
+├── family.js               # KIN (mentionnés seulement) + PARENTS + UNIONS, tous datés
 └── seasons/s1.js … s8.js   # 73 épisodes : synopsis, events, cliff, beats par personnage
 
 src/
 ├── state.js                # progression persistée — seule source de vérité du « vu »
 ├── spoiler.js              # LE FILTRE : unique lecteur autorisé de data/
 ├── ui.js                   # briques HTML partagées (médaillon, badge, modale, toast, esc)
-├── map.js                  # géométrie SVG du monde + rendu + pan/zoom
+├── panzoom.js              # déplacement/zoom d'un SVG par viewBox (carte + arbre)
+├── map.js                  # géométrie SVG du monde + rendu
+├── tree.js                 # disposition et rendu de l'arbre de descendance
 └── views/
     ├── recap.js            # « Reprise » : reprendre après deux semaines
     ├── episodes.js         # liste par saison, validation, fiche épisode
@@ -38,7 +41,7 @@ src/
 assets/                     # icônes générées (PNG 512/192/180 + maskable) + favicon.svg
 tools/
 ├── make_icons.py           # rasteriseur + encodeur PNG en Python pur (aucune lib)
-├── spoiler-audit.mjs       # audit anti-spoil automatisé (Playwright)
+├── spoiler-audit.mjs       # audit anti-spoil (DOM + graphe de parenté)
 └── lint-tone.mjs           # linter de ton : traque les formulations qui anticipent
 ```
 
@@ -60,8 +63,10 @@ tools/
   `chronicle(id)`, `lastBeat(id)`, `statusOf(id)`, `placeOf(id)`, `titleOf(id)`,
   `companionsOf(id)`, `appearances(id)`, `visiblePlaceIds()`, `trailOf(id)`,
   `pinsForMap()`, `whereEveryone()`, `lastEpisodeMoves()`, `deathsIn(ep)`,
+  `byHouse()`, `isKinKnown(id)`, `kinNode(id)`, `familyGraph()`, `housesWithTree()`,
   `STATUS_LABEL`, + réexport `EPISODES / SEASONS / TOTAL_EPISODES / episodeAt`
-- **Consomme** : `data/index.js`, `data/characters.js`, `data/places.js`, `state.progress()`
+- **Consomme** : `data/index.js`, `data/characters.js`, `data/places.js`,
+  `data/family.js`, `state.progress()`
 - **Modifié le** : 2026-07-29
 
 ### src/ui.js
@@ -73,8 +78,27 @@ tools/
 
 ### src/map.js
 - **Exporte** : `VIEW`, `renderMap({placeIds, pins, trail, trailChar}) → string`,
-  `attachPanZoom(wrap) → { zoomIn, zoomOut, focus(placeId), reset }`
-- **Consomme** : `data/places.js`, `characters.houseOf/initials`, `ui.esc`
+  `attachPanZoom(wrap) → { zoomIn, zoomOut, frame, reset, focus(placeId) }`
+- **Consomme** : `data/places.js`, `characters.houseOf/initials`, `ui.esc`, `panzoom.js`
+- **Modifié le** : 2026-07-29
+
+### src/panzoom.js
+- **Exporte** : `attachPanZoom(wrap, {w,h}, {minZoom, maxZoom})
+  → { zoomIn, zoomOut, frame(width, center), reset, focusPoint(pt) }`
+- **Consomme** : le DOM (pointer events, wheel). Aucune donnée.
+- **Invariant** : le viewBox garde toujours le rapport largeur/hauteur du conteneur.
+- **Modifié le** : 2026-07-29
+
+### src/tree.js
+- **Exporte** : `layoutHouse(house, graph, nodeOf)`,
+  `renderTree(house, graph, nodeOf) → { svg, width, height, focusX } | null`
+- **Consomme** : `data/characters.js` (HOUSES), `ui.esc`. **Jamais** `data/family.js`
+  ni `data/index.js` : il reçoit un graphe déjà filtré, donc il ne peut rien divulguer.
+- **Modifié le** : 2026-07-29
+
+### data/family.js
+- **Exporte** : `KIN` (personnages seulement mentionnés), `PARENTS`, `UNIONS`
+- **Consomme** : —
 - **Modifié le** : 2026-07-29
 
 ### data/index.js
@@ -112,7 +136,10 @@ tools/
 | src/spoiler.js | data/index, data/characters, data/places, state | import direct | les 5 vues, main.js |
 | src/state.js | localStorage | config | spoiler, vues, main.js |
 | src/ui.js | data/characters, data/places, spoiler.STATUS_LABEL | import direct | les 5 vues, map.js |
-| src/map.js | data/places, data/characters, ui | import direct | views/mapview.js |
+| src/map.js | data/places, data/characters, ui, panzoom | import direct | views/mapview.js |
+| src/panzoom.js | — | — | map.js, views/characters.js |
+| src/tree.js | data/characters (HOUSES), ui | import direct | views/characters.js |
+| data/family.js | — | — | spoiler.js, data/index.js, les deux outils |
 | views/characters.js | spoiler, ui, data/characters | import direct | main.js (+ ouverte par toutes les vues via `[data-char]`) |
 | views/recap.js | spoiler, state, ui, data/characters | import direct | main.js |
 | views/episodes.js | spoiler, state, ui, data/characters | import direct | main.js |
@@ -134,6 +161,7 @@ tools/
 | `data/places.js` | Les coordonnées doivent rester cohérentes avec la géométrie de `src/map.js`. | 4 |
 | `sw.js` | Liste d'assets en dur + version de cache : un oubli sert indéfiniment une vieille version. | tous |
 | `data/seasons/*.js` | Le texte lui-même peut spoiler par sa formulation, sans qu'aucune donnée ne fuite. Voir `tools/lint-tone.mjs`. | data/index.js |
+| `data/family.js` | **La filiation est la révélation.** Une date trop tôt sur un lien divulgue le cœur de l'intrigue. | spoiler.js, data/index.js |
 
 ---
 
@@ -158,6 +186,17 @@ clic sur n'importe quel [data-char] (délégation globale, main.js)
     → spoiler.chronicle(id)           [beats des épisodes vus uniquement]
     → spoiler.statusOf / placeOf / titleOf / companionsOf / lastBeat
     → ui.openSheet(html)
+```
+
+### Rendu de l'arbre de descendance
+```
+views/characters.js (mode « arbre »)
+  → spoiler.housesWithTree()      [maisons ayant ≥ 3 liens visibles]
+  → spoiler.familyGraph()         [liens dont la révélation est déjà vue,
+                                   « believed » retournés en « official »]
+  → tree.renderTree(house, graph, spoiler.kinNode)
+      layoutHouse : appartenance → abscisses → profondeurs
+  → panzoom.attachPanZoom(wrap, {w,h}) puis frame(largeur, {x: focusX})
 ```
 
 ### Rendu de la carte
@@ -202,6 +241,13 @@ views/mapview.js
   les formulations relues et légitimes vivent dans sa liste `ALLOW`.
 - **Les notes `cliff` sont des constats**, pas des devinettes : elles disent ce qui
   est resté en suspens, sans proposer d'issue.
+- **Un lien de parenté est daté de la révélation au spectateur**, jamais du fait.
+  Les filiations officielles mais fausses passent par `believed` + `refuted` et
+  restent visibles après le démenti, en pointillé : le mensonge officiel fait
+  partie de l'histoire.
+- **`src/tree.js` ne lit aucune donnée d'épisode.** Il reçoit le graphe déjà
+  filtré. Lui donner accès à `data/family.js` supprimerait la garantie.
+- **Un `KIN` n'est pas cliquable** : pas de fiche, donc aucune chronique à filtrer.
 
 ---
 
@@ -223,6 +269,16 @@ views/mapview.js
   spoiler que `spoiler-audit.mjs` ne détecte pas (le texte appartient bien à un
   épisode validé). `lint-tone.mjs` couvre les locutions, pas le vocabulaire :
   celui-ci reste à la vigilance du rédacteur.
+- ⚠️ Les devises de maison (`HOUSES[*].words`) ne sont pas datées et s'affichent
+  dès qu'un membre est débloqué : ne pas y mettre une formule qui n'est prononcée
+  que plus tard (« Valar Morghulis », titre de S02E10, fuitait ainsi dès la
+  saison 1 — trouvé par l'audit).
+- ⚠️ Dans `layoutHouse`, un bloc (personnage + conjoints) est centré au-dessus de
+  ses enfants **mais borné à gauche** par les créneaux déjà pris. Retirer cette
+  borne fait chevaucher les cartes voisines.
+- ⚠️ Une ligne d'union entre deux personnes non voisines contourne par le bas :
+  en trait droit, elle traverse les cartes intermédiaires et laisse croire à une
+  union entre voisins (Brandon/Lyanna, alors qu'il s'agissait de Rhaegar/Elia).
 - ⚠️ `tools/make_icons.py` n'utilise aucune bibliothèque d'image (aucune n'est
   disponible) : ne pas le « simplifier » avec Pillow sans vérifier l'environnement.
 - ⚠️ Les modules ES exigent `http://` : ouvrir `index.html` en `file://` échoue.
@@ -243,3 +299,6 @@ views/mapview.js
 | 2026-07-29 | Audit anti-spoil automatisé (Playwright) | La promesse du produit doit être testable, pas seulement affirmée | Relecture manuelle |
 | 2026-07-29 | Linter de ton sur les données | Le filtre technique n'empêche pas un texte autorisé d'annoncer la suite ; c'est une classe d'erreur, elle mérite un outil | Vigilance à la relecture seule |
 | 2026-07-29 | Notes « À surveiller » rédigées en constats | Une question oriente vers sa réponse (« Va-t-elle répondre par le feu ? ») | Questions ouvertes |
+| 2026-07-29 | Parentés datées de la révélation, filiations officielles modélisées | Un arbre est le pire vecteur de spoiler ; il fallait pouvoir afficher la version officielle puis la vraie | Arbre statique, ou pas d'arbre |
+| 2026-07-29 | `KIN` séparé de `CHARACTERS` | Un arbre sans Rhaegar ni Rickard n'a pas de sens, mais ils ne sont pas des personnages suivis : ni fiche, ni chronique, ni déblocage | Les ajouter à CHARACTERS avec de faux beats |
+| 2026-07-29 | Pan/zoom extrait dans `panzoom.js` | L'arbre a le même problème que la carte : plus grand que l'écran. Un seul comportement à régler et à corriger | Défilement natif (cadres coupés, pas de vue d'ensemble) |

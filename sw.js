@@ -10,7 +10,7 @@
  * permet de publier l'application dans un sous-dossier (GitHub Pages).
  */
 
-const CACHE = 'chroniques-v2';
+const CACHE = 'chroniques-v3';
 
 const ASSETS = [
   './',
@@ -27,6 +27,8 @@ const ASSETS = [
   './src/spoiler.js',
   './src/ui.js',
   './src/map.js',
+  './src/tree.js',
+  './src/panzoom.js',
   './src/views/recap.js',
   './src/views/episodes.js',
   './src/views/characters.js',
@@ -35,6 +37,7 @@ const ASSETS = [
   './data/index.js',
   './data/characters.js',
   './data/places.js',
+  './data/family.js',
   './data/seasons/s1.js',
   './data/seasons/s2.js',
   './data/seasons/s3.js',

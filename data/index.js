@@ -17,6 +17,7 @@ import s8 from './seasons/s8.js';
 
 import { CHARACTERS } from './characters.js';
 import { PLACES } from './places.js';
+import { KIN, PARENTS, UNIONS } from './family.js';
 
 const RAW = [s1, s2, s3, s4, s5, s6, s7, s8];
 
@@ -143,5 +144,53 @@ export function integrityReport() {
   for (const id of Object.keys(CHARACTERS)) {
     if (!DEBUTS[id]) problems.push(`personnage « ${id} » déclaré mais jamais présent dans un épisode`);
   }
+
+  /* --- parentés : toute erreur ici dessine un arbre faux, ou fait fuiter --- */
+  const known = (id) => !!CHARACTERS[id] || !!KIN[id];
+
+  for (const [id, k] of Object.entries(KIN)) {
+    if (CHARACTERS[id]) problems.push(`« ${id} » est à la fois personnage suivi et simple mention`);
+    if (!absOf(k.from)) problems.push(`parent « ${id} » : épisode d'apparition « ${k.from} » inconnu`);
+    if (k.dies && !absOf(k.dies)) problems.push(`parent « ${id} » : épisode de mort « ${k.dies} » inconnu`);
+    if (k.dies && absOf(k.dies) < absOf(k.from)) problems.push(`parent « ${id} » meurt avant d'apparaître`);
+  }
+
+  for (const [parent, child, from, opts = {}] of PARENTS) {
+    const where = `filiation ${parent} → ${child}`;
+    if (!known(parent)) problems.push(`${where} : parent inconnu`);
+    if (!known(child)) problems.push(`${where} : enfant inconnu`);
+    if (!absOf(from)) problems.push(`${where} : épisode « ${from} » inconnu`);
+    if (opts.refuted && !absOf(opts.refuted)) problems.push(`${where} : démenti « ${opts.refuted} » inconnu`);
+    if (opts.refuted && absOf(opts.refuted) < absOf(from)) problems.push(`${where} : démentie avant d'être connue`);
+  }
+
+  for (const [a, b, from, kind, end] of UNIONS) {
+    const where = `union ${a} + ${b}`;
+    if (!known(a) || !known(b)) problems.push(`${where} : personne inconnue`);
+    if (!absOf(from)) problems.push(`${where} : épisode « ${from} » inconnu`);
+    if (!kind) problems.push(`${where} : type d'union manquant`);
+    if (end && !absOf(end)) problems.push(`${where} : fin « ${end} » inconnue`);
+  }
+
   return problems;
+}
+
+/**
+ * Liens dont l'affichage est repoussé : le spectateur connaît la parenté avant
+ * qu'un des deux nœuds n'entre en scène, donc `familyGraph()` attend. Ce n'est
+ * pas une erreur — c'est la protection qui joue — mais c'est bon à savoir quand
+ * on se demande pourquoi un arbre reste incomplet.
+ */
+export function familyDeferrals() {
+  const known = (id) => !!CHARACTERS[id] || !!KIN[id];
+  const dateOf = (id) => (CHARACTERS[id] ? DEBUTS[id] : absOf(KIN[id].from));
+  const out = [];
+  const check = (label, a, b, from) => {
+    if (!known(a) || !known(b) || !absOf(from)) return;
+    const late = Math.max(dateOf(a), dateOf(b));
+    if (absOf(from) < late) out.push(`${label} : connue en ${from}, affichée à partir de ${episodeAt(late).code}`);
+  };
+  for (const [parent, child, from] of PARENTS) check(`${parent} → ${child}`, parent, child, from);
+  for (const [a, b, from] of UNIONS) check(`${a} + ${b}`, a, b, from);
+  return out;
 }

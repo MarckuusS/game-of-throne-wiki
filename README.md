@@ -16,7 +16,7 @@ Installable sur iPhone via *Partager → Sur l'écran d'accueil*.
 | **Reprise** | Vous revenez après deux semaines : résumé du dernier épisode vu, qui a bougé, où en est chacun, dans quel état, avec qui, et ce qui restait en suspens. |
 | **Épisodes** | Les 73 épisodes par saison. Un épisode non vu n'affiche ni titre ni résumé — le titre seul est déjà un spoiler. Une pression le valide. |
 | **Carte** | Le monde connu dessiné en SVG. Les lieux se révèlent quand l'histoire y passe ; les personnages sont posés à leur dernière position connue ; on peut tracer le parcours de n'importe qui, étape par étape. |
-| **Personnages** | 79 personnages, débloqués à leur entrée en scène. Fiche : maison, statut, position, compagnons du moment, ce qu'il pense, et une chronique de tout ce qu'on lui a vu faire. |
+| **Personnages** | 79 personnages, débloqués à leur entrée en scène. Trois modes : **liste** (triable, cherchable), **maisons** (regroupés par famille), **arbre** (arbre de descendance d'une maison, avec unions, bâtardises et filiations officielles). Fiche : maison, statut, position, compagnons du moment, famille, ce qu'il pense, et une chronique de tout ce qu'on lui a vu faire. |
 | **Réglages** | Progression manuelle, mode exploration (désactivé par défaut), sauvegarde par copier-coller, instructions d'installation. |
 
 ## L'anti-spoil, concrètement
@@ -51,6 +51,25 @@ Le filtre n'est pas un habillage : il est dans la structure des données.
 ✓ progression 55 / 73 — aucune fuite
 ✓ progression 72 / 73 — aucune fuite
 ```
+
+### Le cas de l'arbre de descendance
+
+La filiation *est* la révélation, dans cette série. L'arbre applique donc deux
+règles supplémentaires (`data/family.js`) :
+
+- chaque lien porte l'épisode où **le spectateur** l'apprend — pas celui où le
+  fait devient vrai. Un lien n'est jamais tracé avant ;
+- les deux filiations **officielles et fausses** de la série sont modélisées
+  comme telles : un lien `believed` s'affiche comme une filiation ordinaire
+  jusqu'à l'épisode `refuted`, où il devient une ligne pointillée « reconnu »
+  et où le lien réel apparaît. Avant cette date, l'arbre montre la version
+  officielle, sans le moindre indice.
+
+En cas de doute sur une date, on retarde : arriver en retard sur une révélation
+n'est jamais un spoiler, arriver en avance l'est toujours. `integrityReport()`
+refuse un lien vers un inconnu ou un démenti antérieur à sa révélation, et
+`familyDeferrals()` liste les liens que le filtre repousse parce qu'un des deux
+personnages n'est pas encore entré en scène.
 
 ## Publier sur GitHub Pages
 
@@ -113,6 +132,10 @@ Un épisode, dans `data/seasons/sN.js` :
 - Un personnage se débloque au premier épisode où il a un beat — rien à déclarer
   ailleurs. `data/characters.js` ne contient que ce qui est vrai dès sa première
   apparition.
+- Une parenté s'ajoute dans `data/family.js` : `['tywin', 'jaime', '1x01']`.
+  Un parent jamais suivi (mentionné seulement) se déclare dans `KIN`, avec la
+  date de sa première mention. `node tools/spoiler-audit.mjs` vérifie ensuite
+  qu'aucun lien ni aucun nom n'apparaît avant sa date.
 - **Ton** : décrire l'état des choses à la fin de l'épisode. Pas de « pour
   l'instant », pas de « croit-il », pas de « sans savoir que » — `lint-tone.mjs`
   les refuse. Une formulation relue et légitime (fait passé, événement

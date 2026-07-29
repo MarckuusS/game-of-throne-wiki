@@ -13,6 +13,7 @@
 import { PLACES, REGIONS } from '../data/places.js';
 import { houseOf, initials } from '../data/characters.js';
 import { esc } from './ui.js';
+import { attachPanZoom as panzoom } from './panzoom.js';
 
 export const VIEW = { w: 1000, h: 1400 };
 
@@ -262,106 +263,21 @@ export function renderMap({ placeIds = [], pins = [], trail = [], trailChar = nu
 }
 
 /* -------------------------------------------------------------------------- */
-/* Navigation : pan / zoom                                                     */
+/* Navigation                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Le déplacement et le zoom sont assurés par src/panzoom.js, partagé avec
+ * l'arbre de descendance. On n'ajoute ici que le recentrage sur un lieu.
+ */
 export function attachPanZoom(wrap) {
-  const svg = wrap.querySelector('svg');
-  if (!svg) return null;
-
-  const box = { x: 0, y: 0, w: VIEW.w, h: VIEW.h };
-  const pointers = new Map();
-  let pinchStart = null;
-
-  const apply = () => svg.setAttribute('viewBox', `${box.x} ${box.y} ${box.w} ${box.h}`);
-
-  function clamp() {
-    const minW = VIEW.w / 6;
-    box.w = Math.min(VIEW.w, Math.max(minW, box.w));
-    box.h = box.w * (VIEW.h / VIEW.w);
-    box.x = Math.min(VIEW.w - box.w, Math.max(0, box.x));
-    box.y = Math.min(VIEW.h - box.h, Math.max(0, box.y));
-  }
-
-  function zoomAt(factor, cx = 0.5, cy = 0.5) {
-    const px = box.x + box.w * cx;
-    const py = box.y + box.h * cy;
-    box.w *= factor;
-    box.h = box.w * (VIEW.h / VIEW.w);
-    box.x = px - box.w * cx;
-    box.y = py - box.h * cy;
-    clamp();
-    apply();
-  }
-
-  function localRatio(e) {
-    const r = wrap.getBoundingClientRect();
-    return { cx: (e.clientX - r.left) / r.width, cy: (e.clientY - r.top) / r.height };
-  }
-
-  wrap.addEventListener('pointerdown', (e) => {
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.size === 2) {
-      const [a, b] = [...pointers.values()];
-      pinchStart = { dist: Math.hypot(a.x - b.x, a.y - b.y), w: box.w };
-    }
-    wrap.setPointerCapture(e.pointerId);
-  });
-
-  wrap.addEventListener('pointermove', (e) => {
-    const prev = pointers.get(e.pointerId);
-    if (!prev) return;
-    const r = wrap.getBoundingClientRect();
-
-    if (pointers.size === 2 && pinchStart) {
-      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      const [a, b] = [...pointers.values()];
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
-      if (dist > 4) {
-        const target = pinchStart.w * (pinchStart.dist / dist);
-        zoomAt(target / box.w, 0.5, 0.5);
-      }
-      return;
-    }
-
-    const dx = ((e.clientX - prev.x) / r.width) * box.w;
-    const dy = ((e.clientY - prev.y) / r.height) * box.h;
-    box.x -= dx;
-    box.y -= dy;
-    clamp();
-    apply();
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  });
-
-  const release = (e) => {
-    pointers.delete(e.pointerId);
-    if (pointers.size < 2) pinchStart = null;
+  const pz = panzoom(wrap, VIEW);
+  if (!pz) return null;
+  return {
+    ...pz,
+    focus: (placeId, width = VIEW.w / 2.4) => {
+      const p = PLACES[placeId];
+      if (p) pz.frame(width, { x: p.x, y: p.y });
+    },
   };
-  wrap.addEventListener('pointerup', release);
-  wrap.addEventListener('pointercancel', release);
-
-  wrap.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const { cx, cy } = localRatio(e);
-    zoomAt(e.deltaY > 0 ? 1.15 : 0.87, cx, cy);
-  }, { passive: false });
-
-  /** Recentre la vue sur un lieu, avec un niveau de zoom lisible. */
-  function focus(placeId, width = VIEW.w / 2.4) {
-    const p = PLACES[placeId];
-    if (!p) return;
-    box.w = width;
-    box.h = box.w * (VIEW.h / VIEW.w);
-    box.x = p.x - box.w / 2;
-    box.y = p.y - box.h / 2;
-    clamp();
-    apply();
-  }
-
-  function reset() {
-    box.x = 0; box.y = 0; box.w = VIEW.w; box.h = VIEW.h;
-    apply();
-  }
-
-  return { zoomIn: () => zoomAt(0.75), zoomOut: () => zoomAt(1.33), focus, reset };
 }
