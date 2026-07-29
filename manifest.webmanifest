@@ -1,0 +1,25 @@
+{
+  "name": "Chroniques — suivi anti-spoil",
+  "short_name": "Chroniques",
+  "description": "Carnet de suivi de la série : résumés, personnages, carte et déplacements, débloqués épisode par épisode.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f14",
+  "theme_color": "#0b0f14",
+  "categories": ["entertainment", "books", "utilities"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Reprise", "url": "./#/reprise" },
+    { "name": "Carte", "url": "./#/carte" },
+    { "name": "Épisodes", "url": "./#/episodes" }
+  ]
+}
