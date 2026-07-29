@@ -13,7 +13,7 @@ export default {
       ],
       cliff: "Mance a cent mille hommes derrière lui. Que peut faire une Garde de six cents ?",
       beats: {
-        jon:      { at: 'audela', did: "Amené devant Mance Rayder, il jure vouloir combattre pour les vivants.", feel: "Joue un rôle sans savoir jusqu'où il devra aller.", st: 'captif' },
+        jon:      { at: 'audela', did: "Amené devant Mance Rayder, il jure vouloir combattre pour les vivants.", feel: "Joue un rôle, et sa vie dépend de la qualité du mensonge.", st: 'captif' },
         ygritte:  { at: 'audela', did: "Vante Jon devant Mance et le prend sous son aile." },
         mance:    { at: 'audela', did: "Accepte Jon dans son armée et lui explique comment on unit quatre-vingt clans." },
         tormund:  { at: 'audela', did: "Se méfie du corbeau et le surveille." },
@@ -76,7 +76,7 @@ export default {
         "Daenerys achète les huit mille Immaculés en offrant le plus petit de ses dragons.",
         "Locke tranche la main d'épée de Jaime Lannister.",
       ],
-      cliff: "Daenerys a promis un dragon. A-t-elle réellement l'intention de le livrer ?",
+      cliff: "Daenerys a échangé son plus petit dragon contre huit mille Immaculés.",
       beats: {
         edmure:   { at: 'vivesaigues', did: "Enterre son père et défend ses initiatives militaires devant Robb." },
         blackfish:{ at: 'vivesaigues', did: "Décoche la flèche que son neveu a ratée et prend le commandement des éclaireurs." },
@@ -88,7 +88,7 @@ export default {
         cersei:   { at: 'portreal', did: "Se voit rappeler par son père qu'elle n'est pas son héritière." },
         jaime:    { at: 'conflans', did: "Sauve Brienne d'un viol par un mensonge sur les saphirs, puis perd sa main droite.", feel: "Perd d'un coup ce qui faisait de lui Jaime Lannister.", st: 'blesse' },
         brienne:  { at: 'conflans', did: "Échappe au pire grâce au mensonge de Jaime.", st: 'captif' },
-        arya:     { at: 'conflans', did: "Voit Beric libérer le Limier par jugement à venir et refuse de rester." },
+        arya:     { at: 'conflans', did: "Voit Beric accorder au Limier un jugement par combat, et refuse de rester." },
         beric:    { at: 'conflans', did: "Fait juger Sandor Clegane par le Maître de la Lumière." },
         thoros:   { at: 'conflans', did: "Sert de prêtre à une confrérie de brigands." },
         sandor:   { at: 'conflans', did: "Attend son jugement enchaîné.", st: 'captif' },
@@ -164,7 +164,7 @@ export default {
         tywin:    { at: 'portreal', did: "Marie Tyrion à Sansa et Cersei à Loras, sans demander l'avis de personne." },
         tyrion:   { at: 'portreal', did: "Apprend qu'il va épouser une enfant de quatorze ans." },
         cersei:   { at: 'portreal', did: "Découvre qu'elle sera mariée comme une jument." },
-        sansa:    { at: 'portreal', did: "Croit encore qu'elle épousera Loras Tyrell.", st: 'captif' },
+        sansa:    { at: 'portreal', did: "Se prépare à épouser Loras Tyrell.", st: 'captif' },
         stannis:  { at: 'peyredragon', did: "Retrouve une femme fanatique et une fille qu'il n'ose pas voir." },
         shireen:  { at: 'peyredragon', did: "Chante pour Davos dans les cachots et lui apprend à lire." },
         davos:    { at: 'peyredragon', did: "Commence à lire grâce à Shireen.", st: 'captif' },
@@ -216,7 +216,7 @@ export default {
         "Jon refuse d'attaquer Châteaunoir et quitte Ygrid.",
         "Melisandre montre à Gendry la ville où il est né et lui révèle qui était son père.",
       ],
-      cliff: "Jaime a désobéi à son père pour une Torth. Que va-t-il faire de sa parole ?",
+      cliff: "Jaime a sauvé Brienne contre les ordres de son père. Sa promesse à Catelyn Stark reste entière.",
       beats: {
         jaime:    { at: 'harrenhal', did: "Fait demi-tour et saute dans la fosse aux ours pour sauver Brienne.", feel: "Choisit un serment plutôt que sa famille, pour la première fois.", st: 'blesse' },
         brienne:  { at: 'harrenhal', did: "Affronte un ours avec un bois d'épée et est rachetée par Jaime.", st: 'ok' },
@@ -255,7 +255,7 @@ export default {
         "Daario Naharis tue ses deux capitaines et offre les Puînés à Daenerys.",
         "Sam affronte un Autre à la Tour Maudite et le détruit avec un poignard en verredragon.",
       ],
-      cliff: "Le verredragon tue les Autres. Sam le sait — encore faut-il qu'on l'écoute.",
+      cliff: "Sam a détruit un Autre d'un poignard de verredragon. Personne au sud du Mur ne l'a appris.",
       beats: {
         tyrion:   { at: 'portreal', did: "Épouse Sansa, s'humilie devant la cour et refuse de la toucher.", feel: "Le seul geste décent qu'on lui laisse encore faire." },
         sansa:    { at: 'portreal', did: "Mariée de force, elle découvre que son époux ne lui fera pas de mal.", st: 'captif' },

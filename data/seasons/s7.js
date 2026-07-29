@@ -150,7 +150,7 @@ export default {
         "Davos récupère Gendry à Culpucier ; Tyrion négocie en secret avec Jaime.",
         "Sam part de Villevieille avec les registres ; Gilly a lu sans le savoir l'annulation du mariage de Rhaegar.",
       ],
-      cliff: "Sept hommes partent au-delà du Mur chercher un mort. Aucun ne devrait en revenir.",
+      cliff: "Sept hommes partent au-delà du Mur pour en ramener un mort vivant.",
       beats: {
         daenerys: { at: 'conflans', did: "Offre le choix aux prisonniers Lannister et brûle les Tarly qui refusent.", feel: "Ne voit pas la différence entre fermeté et terreur." },
         randyll:  { at: 'conflans', did: "Refuse de plier le genou devant une étrangère et brûle avec son fils.", st: 'mort' },
@@ -220,7 +220,7 @@ export default {
         daenerys: { at: 'portreal', did: "Amène un dragon au sommet, obtient l'aveu de Cersei, puis navigue vers le nord avec Jon.", st: 'ok' },
         cersei:   { at: 'portreal', did: "Voit un mort de ses yeux, accepte la trêve, puis annonce à Jaime qu'elle ne bougera pas.", feel: "Ne pense plus qu'à l'enfant et au trône." },
         jaime:    { at: 'portreal', did: "Découvre que Cersei l'a trahi et part seul vers le Nord.", feel: "Choisit son serment plutôt que sa sœur.", st: 'ok' },
-        tyrion:   { at: 'portreal', did: "Affronte Cersei seul à seul et obtient l'impossible — croit-il." },
+        tyrion:   { at: 'portreal', did: "Affronte Cersei seul à seul et obtient d'elle une promesse de trêve." },
         brienne:  { at: 'portreal', did: "Supplie Jaime de se battre pour les vivants." },
         podrick:  { at: 'portreal', did: "Escorte Brienne au sommet." },
         sandor:   { at: 'portreal', did: "Retrouve son frère et lui promet la mort : « Tu sais qui vient te chercher. »" },

@@ -13,7 +13,7 @@ export default {
       ],
       cliff: "Des masques dorés tuent dans Meereen. Contre qui Daenerys peut-elle riposter ?",
       beats: {
-        cersei:   { at: 'portreal', did: "Enterre son père et rappelle à Jaime qu'il a libéré l'assassin de leur famille.", feel: "Depuis l'enfance, elle attend la prophétie qui l'attend." },
+        cersei:   { at: 'portreal', did: "Enterre son père et rappelle à Jaime qu'il a libéré l'assassin de leur famille.", feel: "Vit depuis l'enfance avec les mots de la sorcière." },
         jaime:    { at: 'portreal', did: "Veille le corps de Tywin et encaisse les reproches de sa sœur." },
         margaery: { at: 'portreal', did: "Surprend son frère avec un garde et prépare son mariage avec Tommen." },
         loras:    { at: 'portreal', did: "Se moque des convenances et de la Foi." },
@@ -61,7 +61,7 @@ export default {
         cersei:   { at: 'portreal', did: "Reçoit un collier de vipère en menace et gouverne sans en avoir le titre." },
         ellaria:  { at: 'lancehelion', did: "Réclame vengeance pour Oberyn et veut mutiler Myrcella.", },
         myrcella: { at: 'lancehelion', did: "Vit à Dorne, fiancée à Trystane, loin des guerres de sa mère." },
-        jon:      { at: 'chateaunoir', did: "Refuse l'offre de Stannis de devenir Jon Stark, puis est élu Lord Commandant.", feel: "Ne se croit pas fait pour commander et accepte quand même." },
+        jon:      { at: 'chateaunoir', did: "Refuse l'offre de Stannis de devenir Jon Stark, puis est élu Lord Commandant.", feel: "Ne s'estime pas fait pour commander, et accepte quand même." },
         samwell:  { at: 'chateaunoir', did: "Propose Jon devant l'assemblée et retourne l'élection." },
         stannis:  { at: 'chateaunoir', did: "Offre à Jon le nom de Stark et Winterfell, et se fait refuser." },
         alliser:  { at: 'chateaunoir', did: "Battu d'une voix à l'élection." },
@@ -115,7 +115,7 @@ export default {
         "Stannis marche sur Winterfell ; Mélisandre tente de séduire Jon, qui refuse.",
         "Les Fils de la Harpie tendent une embuscade : Barristan Selmy est tué, Ver Gris grièvement blessé.",
       ],
-      cliff: "Daenerys a perdu son meilleur chevalier. Va-t-elle répondre par le feu ?",
+      cliff: "Barristan Selmy est mort, Ver Gris est grièvement blessé, et les Fils de la Harpie courent toujours.",
       beats: {
         cersei:   { at: 'portreal', did: "Arme la Foi Militante et laisse arrêter Loras Tyrell.", feel: "Croit avoir trouvé une arme sans manche." },
         highsparrow:{ at: 'portreal', did: "Reçoit le droit d'armer ses fidèles et s'en sert aussitôt." },

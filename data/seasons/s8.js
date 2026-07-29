@@ -122,7 +122,7 @@ export default {
         "Jaime part vers le sud rejoindre Cersei, laissant Brienne en larmes.",
         "Euron abat Rhaegal au scorpion et capture Missandei, exécutée sur les murs de Port-Réal.",
       ],
-      cliff: "« Dracarys ». Daenerys n'a plus qu'un dragon, plus d'amie, et plus de raison de se retenir.",
+      cliff: "« Dracarys ». Daenerys a perdu un dragon et sa plus proche amie, et refuse tout délai avant l'assaut.",
       beats: {
         jon:      { at: 'winterfell', did: "Brûle les morts, confie sa vérité à Sansa et Arya, et refuse la couronne du Nord.", feel: "Voudrait n'être personne." },
         daenerys: { at: 'winterfell', did: "Légitime Gendry, demande à Jon de taire sa naissance, et perd Rhaegal puis Missandei.", feel: "Il ne lui reste que la peur qu'elle inspire." },

@@ -36,6 +36,13 @@ Le filtre n'est pas un habillage : il est dans la structure des données.
   l'application à 7 niveaux de progression, parcourt les 5 vues (saisons
   dépliées) et cherche dans le DOM le moindre fragment de texte appartenant à un
   épisode non validé, ainsi que les noms des personnages pas encore apparus.
+- `tools/lint-tone.mjs` s'attaque au spoiler que l'audit ne peut pas voir : la
+  **formulation**. « Fait des Stark des otages et non des cadavres — pour
+  l'instant » ne divulgue rien, et pourtant on sait qu'elle changera d'avis. Le
+  linter traque ces locutions (`pour l'instant`, `croit-il`, `pas encore`,
+  `sans savoir que`, `bientôt`, futur prédictif…). Règle éditoriale : rapporter
+  l'état des choses à la fin de l'épisode, sans anticipation ni ironie du
+  narrateur.
 
 ```
 ✓ progression  0 / 73 — aucune fuite
@@ -74,6 +81,7 @@ npx http-server -p 8099 -s .          # n'importe quel serveur statique fait l'a
 # les modules ES exigent http:// — ouvrir index.html en file:// ne marchera pas
 
 node tools/spoiler-audit.mjs           # audit anti-spoil (Playwright)
+node tools/lint-tone.mjs               # linter de ton : aucune anticipation dans les textes
 python3 tools/make_icons.py            # régénère les icônes PNG
 ```
 
@@ -105,6 +113,10 @@ Un épisode, dans `data/seasons/sN.js` :
 - Un personnage se débloque au premier épisode où il a un beat — rien à déclarer
   ailleurs. `data/characters.js` ne contient que ce qui est vrai dès sa première
   apparition.
+- **Ton** : décrire l'état des choses à la fin de l'épisode. Pas de « pour
+  l'instant », pas de « croit-il », pas de « sans savoir que » — `lint-tone.mjs`
+  les refuse. Une formulation relue et légitime (fait passé, événement
+  intra-épisode) s'ajoute à sa liste `ALLOW`.
 
 Après modification, incrémenter `CACHE` dans `sw.js` pour que les appareils déjà
 installés récupèrent la nouvelle version.

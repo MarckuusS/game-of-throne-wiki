@@ -41,7 +41,7 @@ export default {
     },
     {
       n: 2, title: 'The Lion and the Rose', air: '2014-04-13',
-      synopsis: "Le mariage du roi Joffrey Baratheon est un spectacle réussi jusqu'au dessert. Dans le Nord, Ramsay chasse des jeunes filles. Bran touche un arbre et voit ce qu'il ne comprend pas encore.",
+      synopsis: "Le mariage du roi Joffrey Baratheon est un spectacle réussi jusqu'au dessert. Dans le Nord, Ramsay chasse des jeunes filles. Bran touche un arbre et reçoit des images qu'il ne comprend pas.",
       events: [
         "Ramsay chasse une fille aux chiens et présente Schlingue à son père.",
         "Joffrey humilie Tyrion en public avec une pantomime de la guerre des cinq rois.",
@@ -66,7 +66,7 @@ export default {
         ramsay:   { at: 'fortterreur', did: "Chasse une jeune fille aux chiens et exhibe Schlingue devant son père." },
         roose:    { at: 'fortterreur', did: "Reproche à son fils d'avoir abîmé un otage précieux, puis ordonne la prise de Moat Cailin." },
         bran:     { at: 'audela', did: "Touche un arbre-cœur et reçoit une vision : un dragon sur Port-Réal, les cryptes, « regarde vers le nord ».", st: 'fuite' },
-        jojen:    { at: 'audela', did: "Presse Bran d'avancer avant que ses forces ne le quittent." },
+        jojen:    { at: 'audela', did: "Presse Bran d'avancer : ses forces déclinent." },
         meera:    { at: 'audela', did: "Chasse pour le groupe dans la neige." },
         stannis:  { at: 'peyredragon', did: "Laisse brûler ses beaux-frères pour hérésie." },
         melisandre:{ at: 'peyredragon', did: "Brûle des infidèles et explique à Shireen qu'il n'y a que deux dieux." },

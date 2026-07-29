@@ -1,6 +1,6 @@
 # Architecture — Chroniques (suivi de série anti-spoil)
 
-> Dernière mise à jour : 2026-07-29
+> Dernière mise à jour : 2026-07-29 (2e passe : ton des données)
 > Stack : HTML + CSS + JavaScript (modules ES natifs), aucune dépendance, aucun build. Stockage : localStorage. PWA (manifest + service worker).
 > Pattern : données datées → filtre → vues. Routeur par hash, rendu par chaînes HTML.
 > Points d'entrée : `index.html` (coquille) → `main.js` (routeur et démarrage)
@@ -38,7 +38,8 @@ src/
 assets/                     # icônes générées (PNG 512/192/180 + maskable) + favicon.svg
 tools/
 ├── make_icons.py           # rasteriseur + encodeur PNG en Python pur (aucune lib)
-└── spoiler-audit.mjs       # audit anti-spoil automatisé (Playwright)
+├── spoiler-audit.mjs       # audit anti-spoil automatisé (Playwright)
+└── lint-tone.mjs           # linter de ton : traque les formulations qui anticipent
 ```
 
 ---
@@ -132,6 +133,7 @@ tools/
 | `data/index.js` | Construit tous les index dérivés (débuts, chronologies, premières apparitions de lieux). | 3 |
 | `data/places.js` | Les coordonnées doivent rester cohérentes avec la géométrie de `src/map.js`. | 4 |
 | `sw.js` | Liste d'assets en dur + version de cache : un oubli sert indéfiniment une vieille version. | tous |
+| `data/seasons/*.js` | Le texte lui-même peut spoiler par sa formulation, sans qu'aucune donnée ne fuite. Voir `tools/lint-tone.mjs`. | data/index.js |
 
 ---
 
@@ -191,6 +193,15 @@ views/mapview.js
 - **Tous les chemins sont relatifs** (`./`) : l'application doit fonctionner dans un
   sous-dossier GitHub Pages.
 - **Tout texte issu des données est échappé** via `ui.esc()` avant insertion.
+- **Règle éditoriale (ton)** : un `synopsis`, un `did`, un `feel`, un `cliff`
+  décrivent l'état des choses **à la fin de l'épisode**. Interdits : les
+  atténuations qui annoncent un revirement (« — pour l'instant »), l'ironie du
+  narrateur (« croit-il »), l'ignorance présentée comme provisoire (« sans savoir
+  que »), le futur prédictif et les questions qui suggèrent leur réponse
+  (« Va-t-elle répondre par le feu ? »). `tools/lint-tone.mjs` les refuse ;
+  les formulations relues et légitimes vivent dans sa liste `ALLOW`.
+- **Les notes `cliff` sont des constats**, pas des devinettes : elles disent ce qui
+  est resté en suspens, sans proposer d'issue.
 
 ---
 
@@ -209,7 +220,9 @@ views/mapview.js
   vrais lieux dans `PLACES`, avec `kind: 'region'`.
 - ⚠️ Ne jamais introduire dans un `synopsis`/`did` un terme qui n'existe pas encore
   à cet épisode (ex. nommer les « Noces Pourpres » avant la saison 4) : c'est un
-  spoiler que l'audit automatique ne détecte pas.
+  spoiler que `spoiler-audit.mjs` ne détecte pas (le texte appartient bien à un
+  épisode validé). `lint-tone.mjs` couvre les locutions, pas le vocabulaire :
+  celui-ci reste à la vigilance du rédacteur.
 - ⚠️ `tools/make_icons.py` n'utilise aucune bibliothèque d'image (aucune n'est
   disponible) : ne pas le « simplifier » avec Pillow sans vérifier l'environnement.
 - ⚠️ Les modules ES exigent `http://` : ouvrir `index.html` en `file://` échoue.
@@ -228,3 +241,5 @@ views/mapview.js
 | 2026-07-29 | Titres d'épisodes en version originale | Référence stable et vérifiable ; les titres français varient d'une source à l'autre | Titres français |
 | 2026-07-29 | Icônes générées par un script Python maison | Ni Pillow, ni cairosvg, ni ImageMagick dans l'environnement ; iOS exige du PNG pour `apple-touch-icon` | SVG seul (non fiable sur iOS) |
 | 2026-07-29 | Audit anti-spoil automatisé (Playwright) | La promesse du produit doit être testable, pas seulement affirmée | Relecture manuelle |
+| 2026-07-29 | Linter de ton sur les données | Le filtre technique n'empêche pas un texte autorisé d'annoncer la suite ; c'est une classe d'erreur, elle mérite un outil | Vigilance à la relecture seule |
+| 2026-07-29 | Notes « À surveiller » rédigées en constats | Une question oriente vers sa réponse (« Va-t-elle répondre par le feu ? ») | Questions ouvertes |
